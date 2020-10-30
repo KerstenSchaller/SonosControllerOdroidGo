@@ -344,6 +344,7 @@ int getVolume(HTTPClient *http, IPAddress targetSonos) {
             return -1;
         } else {
             auto volStr = tagValue(std::string(http->getString().c_str()), "CurrentVolume");
+            Serial.println(volStr.c_str());    
             return String(volStr.c_str()).toInt();
         }
 

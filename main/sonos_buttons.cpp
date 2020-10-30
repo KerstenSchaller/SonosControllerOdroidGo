@@ -13,13 +13,17 @@
 #include <esp_wifi.h>
 #include <driver/touch_pad.h>
 #include <driver/rtc_io.h>
-#include "ulp_main.h"
+//#include "ulp_main.h"
 #include "sonos.h"
 #include <esp32/ulp.h>
 #include "config.h"
 
+
+
 #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
+
+
 
 //config variables
 #define NUM_BTN_COLUMNS (4)
@@ -238,6 +242,7 @@ void blinkAll(uint8_t times, int waitTime) {
     }
 }
 
+/*
 boolean didJustWake() {
     esp_sleep_wakeup_cause_t wakeup_reason;
     wakeup_reason = esp_sleep_get_wakeup_cause();
@@ -257,6 +262,7 @@ boolean didJustWake() {
 
     return wokeUp;
 }
+*/
 
 boolean connectWifi() {
     WiFi.mode(WIFI_STA);
@@ -265,9 +271,12 @@ boolean connectWifi() {
         // Connect using a cached bssid and channel
         ESP_LOGD(TAG, "Connecting using cached wifi config");
         WiFi.begin(SSID, PASSWORD, wifi_cache.channel, wifi_cache.bssid, true);
+        Serial.write("Connected cached!\n");
     } else {
         ESP_LOGD(TAG, "Connecting to without cached wifi config");
         WiFi.begin(SSID, PASSWORD);
+        Serial.write("Connected new!\n");
+        //Serial.write(WiFi.localIP);
     }
 
     ESP_LOGD(TAG, "Waiting for WiFi to connect...");
@@ -308,9 +317,9 @@ void setup() {
         NULL,
         1
     );
-    boolean woke = didJustWake();
+    //boolean woke = didJustWake();
 
-    if (!woke) {
+    if (false) {
         LEDS_lit = 1;
         delay(250);
         LEDS_lit = 3;
@@ -374,16 +383,13 @@ void napTime() {
         rtc_gpio_pullup_en(btnrowpins[i]);
         rtc_gpio_hold_en(btnrowpins[i]);
     }
+    
     esp_sleep_enable_ulp_wakeup();
-    ESP_ERROR_CHECK( ulp_load_binary(
-        0 /* load address, set to 0 when using default linker scripts */,
-        bin_start,
-        (bin_end - bin_start) / sizeof(uint32_t)) 
-    );
+
     // Reset the ULP wake bit to zero in case an intervening run set it to a button and it wasn't cleaned up
-    ulp_wake_gpio_bit = 0;
+    //ulp_wake_gpio_bit = 0;
     ESP_LOGI(TAG, "Going to sleep now");
-    ESP_ERROR_CHECK( ulp_run(&ulp_scan_btns - RTC_SLOW_MEM) );
+    //ESP_ERROR_CHECK( ulp_run(&ulp_scan_btns - RTC_SLOW_MEM) );
     // Wakeup the ULP processor every 100 ms to check for button presses
     ESP_ERROR_CHECK( ulp_set_wakeup_period(0, 100000) );
     esp_deep_sleep_start();
@@ -408,11 +414,22 @@ void doSonos(int (*operation)(HTTPClient *http, IPAddress targetSonos)) {
 
 void loop() {
     static int idleLoopCount = 0;
-
+    //Serial.write("Looping...");
     int handle_buttons = buttons_released | sleep_buttons;
     // Clear the sleep_buttons variable so we only handle it once
     sleep_buttons = 0;
     scan();
+    doSonos(getVolume);
+ 
+      
+    Serial.write("My code2\n");
+    static bool b = false;
+    if(b == true)
+    {
+        doSonos(sonosPlay);
+        b = false;
+    }
+
     if (handle_buttons != 0) {
         idleLoopCount = 0;
         if (bitRead(handle_buttons, 0)) {
