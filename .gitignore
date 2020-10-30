@@ -34,4 +34,4 @@
 .*.swp
 build/
 
-**/main/config.h
+*config.h
