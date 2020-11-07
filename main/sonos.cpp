@@ -7,6 +7,9 @@
 #include <Preferences.h>
 #include "sonos.h"
 
+
+sonos_parameters_t sonos_parameters;
+
 static const char* PLAYER_SEARCH = "M-SEARCH * HTTP/1.1\r\n"
     "HOST: 239.255.255.250:1900\r\n"
     "MAN: \"ssdp:discover\"\r\n"
@@ -46,6 +49,25 @@ static std::string changeVolumeCall(int volume) {
             "</u:GetVolume>"
         "</s:Body>"
     "</s:Envelope>";
+}
+
+static IPAddress targetSonos;
+
+// Second layer of sonos operation wrapper to handle the rediscovery logic
+void doSonos(int (*operation)(HTTPClient *http, IPAddress targetSonos)) {
+    if (!targetSonos) {
+        targetSonos = discoverSonos(std::string(sonos_parameters.UID));
+    }
+    if (!targetSonos) {
+        ESP_LOGE(TAG, "Couldn't find the right sonos, bailing");
+        return;
+    }
+
+    int error = sonosOperation(operation, targetSonos);
+    if (error) {
+        // try rediscovering
+        targetSonos = discoverSonos(std::string(sonos_parameters.UID));
+    }
 }
 
 std::string tagValue(std::string xmlData, std::string tagName) {
@@ -284,10 +306,12 @@ std::string playState(HTTPClient *http, IPAddress targetSonos) {
 }
 
 int sonosPlay(HTTPClient *http, IPAddress targetSonos) {
+    
     std::string currentState = playState(http, targetSonos);
     Serial.printf("Current play state is %s\n", currentState.c_str());
 
     std::string requestState = currentState == "PLAYING" ? "Pause" : "Play";
+    sonos_parameters.PlayState = requestState;
     auto postBody = soapCall(requestState);
 
     if (http->begin(targetSonos.toString(), SONOS_PORT, "/MediaRenderer/AVTransport/Control")) {
@@ -307,6 +331,8 @@ int sonosPlay(HTTPClient *http, IPAddress targetSonos) {
         Serial.println("Couldn't connect to sonos, maybe need to re-discover");
         return ENO_CANTCONNECT;
     }
+
+    sonos_parameters.Volume = getVolume(http, targetSonos);
 }
 
 int sonosNext(HTTPClient *http, IPAddress targetSonos) {
@@ -356,6 +382,7 @@ int getVolume(HTTPClient *http, IPAddress targetSonos) {
 
 int changeVolume(HTTPClient *http, IPAddress targetSonos, int amount) {
     int currentVolume = getVolume(http, targetSonos);
+    
     if (currentVolume < 0) {
         Serial.println("Couldn't get the current volume");
         return ENO_CANTCONNECT;
@@ -367,6 +394,7 @@ int changeVolume(HTTPClient *http, IPAddress targetSonos, int amount) {
     } else if (nextVolume > 100) {
         nextVolume = 100;
     }
+    sonos_parameters.Volume = nextVolume;
 
     if (http->begin(targetSonos.toString(), SONOS_PORT, "/MediaRenderer/RenderingControl/Control")) {
         auto call = changeVolumeCall(nextVolume);
@@ -390,10 +418,10 @@ int changeVolume(HTTPClient *http, IPAddress targetSonos, int amount) {
 }
 
 int volumeUp(HTTPClient *http, IPAddress targetSonos) {
-    return changeVolume(http, targetSonos, 7);
+    return changeVolume(http, targetSonos, 1);
 }
 
 int volumeDown(HTTPClient *http, IPAddress targetSonos) {
-    return changeVolume(http, targetSonos, -7);
+    return changeVolume(http, targetSonos, -1);
 }
 
