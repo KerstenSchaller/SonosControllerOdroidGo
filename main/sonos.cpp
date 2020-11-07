@@ -241,6 +241,7 @@ IPAddress discoverSonos(std::string uid) {
             IPAddress ourSonos = zoneTopology(&http, std::string(foundAddr.toString().c_str()), uid);
             if (ourSonos) {
                 Serial.printf("FOUND OUR SONOS at %s\n", ourSonos.toString().c_str());
+                sonos_parameters.IP = ourSonos.toString().c_str();
                 targetSonos = ourSonos;
                 // Save our findings in flash across boots
                 Preferences prefs;

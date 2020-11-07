@@ -4,10 +4,12 @@
 #include "config.h"
 #include "wifi_controller.h"
 
-boolean connectWifi(wifi_parameter_t parameter) 
+wifi_parameter_t wifi_parameters;
+
+boolean connectWifi() 
 {
     WiFi.mode(WIFI_STA);
-    WiFi.begin(parameter.SSID.c_str(), parameter.PASSWORD.c_str());
+    WiFi.begin(wifi_parameters.SSID.c_str(), wifi_parameters.PASSWORD.c_str());
     Serial.write("Waiting for WiFi to connect...\n");
         
     uint8_t wifiTries = 0;
@@ -25,5 +27,6 @@ boolean connectWifi(wifi_parameter_t parameter)
     
     }
     GO.lcd.println("WiFi connect succeeded");
+    wifi_parameters.IP = WiFi.localIP().toString().c_str();
     return true;
 }

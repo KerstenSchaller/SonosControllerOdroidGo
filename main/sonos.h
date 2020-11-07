@@ -6,6 +6,7 @@ struct sonos_parameters_t
     std::string UID = "";
     std::string PlayState = "not set";
     int Volume = 0;
+    std::string IP = "";
 };
 extern sonos_parameters_t sonos_parameters;
 

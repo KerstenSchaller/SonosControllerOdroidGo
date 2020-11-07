@@ -7,10 +7,13 @@
 struct wifi_parameter_t
 {
     std::string SSID;
-    std::string PASSWORD;  
+    std::string PASSWORD; 
+    std::string IP; 
 };
 
-boolean connectWifi(wifi_parameter_t parameter);
+extern wifi_parameter_t wifi_parameters;
+
+boolean connectWifi();
 
 
 
