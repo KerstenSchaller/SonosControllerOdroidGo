@@ -21,5 +21,5 @@ int volumeDown(HTTPClient *http, IPAddress targetSonos);
 int sonosNext(HTTPClient *http, IPAddress targetSonos);
 int sonosPlay(HTTPClient *http, IPAddress targetSonos);
 int getVolume(HTTPClient *http, IPAddress targetSonos);
-
+int getPlayState(HTTPClient *http, IPAddress targetSonos);
 IPAddress discoverSonos(std::string uid);

@@ -306,6 +306,12 @@ std::string playState(HTTPClient *http, IPAddress targetSonos) {
     return "";
 }
 
+int getPlayState(HTTPClient *http, IPAddress targetSonos) 
+{
+    std::string currentState = playState(http, targetSonos);
+    sonos_parameters.PlayState = (currentState == "PLAYING") ? "Play" : "Pause";
+}
+
 int sonosPlay(HTTPClient *http, IPAddress targetSonos) {
     
     std::string currentState = playState(http, targetSonos);
@@ -371,7 +377,8 @@ int getVolume(HTTPClient *http, IPAddress targetSonos) {
             return -1;
         } else {
             auto volStr = tagValue(std::string(http->getString().c_str()), "CurrentVolume");
-            Serial.println(volStr.c_str());    
+            Serial.println(volStr.c_str());
+            sonos_parameters.Volume = String(volStr.c_str()).toInt();
             return String(volStr.c_str()).toInt();
         }
 
