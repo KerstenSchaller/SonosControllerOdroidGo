@@ -2,6 +2,8 @@
 #include "sonos.h"
 #include "button_wrapper.h"
 #include "odroid_go.h"
+#include "sleep_controller.h"
+
 
 void updateSonosScreen();
 void handleButtonsSonos();
@@ -39,7 +41,7 @@ void handleButtonsSonos()
       doSonos(sonosPlay);
       updateSonosScreen();
   }
-
+  handleSleep();
 }
 
 
