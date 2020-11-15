@@ -7,12 +7,12 @@ void IRAM_ATTR onTimer()
 {
   Serial.println("timer shut down");
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_32, 0);
-  delay(500);
   esp_deep_sleep_start();
 }
 
 void initTimerSec(int seconds)
 {
+  Serial.printf("Starting timer with %d seconds\n", seconds);
   timer = timerBegin(0, 80, true);                      // timer 0, div 80
   timerAttachInterrupt(timer, &onTimer, true);          // attach callback
   timerAlarmWrite(timer, seconds * 1000 * 1000, false); // set time in us
@@ -24,7 +24,13 @@ void handleSleep()
 {
   static std::string playstateLastloop = sonos_parameters.PlayState;
   std::string playStateActual = sonos_parameters.PlayState;
-  initTimerSec(15*60);
+  static bool firstBoot = true;
+
+  if(firstBoot)
+  {
+    initTimerSec(15*60);
+    firstBoot = false;
+  }
   
   //check if playstate has changed
   if(playstateLastloop != playStateActual)

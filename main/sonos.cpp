@@ -278,7 +278,7 @@ std::string playState(HTTPClient *http, IPAddress targetSonos) {
     auto postBody = soapCall("GetTransportInfo");
 
     if (http->begin(targetSonos.toString(), SONOS_PORT, "/MediaRenderer/AVTransport/Control")) {
-        Serial.printf("POST: BODY %s\n", postBody.c_str());
+        //Serial.printf("POST: BODY %s\n", postBody.c_str());
         http->addHeader("Content-Type", "text/xml; charset=\"utf-8\"");
         http->addHeader("SOAPACTION", "urn:schemas-upnp-org:service:AVTransport:1#GetTransportInfo");
 
@@ -315,14 +315,13 @@ int getPlayState(HTTPClient *http, IPAddress targetSonos)
 int sonosPlay(HTTPClient *http, IPAddress targetSonos) {
     
     std::string currentState = playState(http, targetSonos);
-    Serial.printf("Current play state is %s\n", currentState.c_str());
-
+    
     std::string requestState = currentState == "PLAYING" ? "Pause" : "Play";
     sonos_parameters.PlayState = requestState;
     auto postBody = soapCall(requestState);
 
     if (http->begin(targetSonos.toString(), SONOS_PORT, "/MediaRenderer/AVTransport/Control")) {
-        Serial.printf("POST: BODY %s\n", postBody.c_str());
+        //Serial.printf("POST: BODY %s\n", postBody.c_str());
         http->addHeader("Content-Type", "text/xml; charset=\"utf-8\"");
         http->addHeader("SOAPACTION", ("urn:schemas-upnp-org:service:AVTransport:1#" + requestState).c_str());
 
@@ -346,7 +345,7 @@ int sonosNext(HTTPClient *http, IPAddress targetSonos) {
     auto postBody = soapCall("Next");
 
     if (http->begin(targetSonos.toString(), SONOS_PORT, "/MediaRenderer/AVTransport/Control")) {
-        Serial.printf("POST: BODY %s\n", postBody.c_str());
+        //Serial.printf("POST: BODY %s\n", postBody.c_str());
         http->addHeader("Content-Type", "text/xml; charset=\"utf-8\"");
         http->addHeader("SOAPACTION", "urn:schemas-upnp-org:service:AVTransport:1#Next");
 
@@ -377,7 +376,6 @@ int getVolume(HTTPClient *http, IPAddress targetSonos) {
             return -1;
         } else {
             auto volStr = tagValue(std::string(http->getString().c_str()), "CurrentVolume");
-            Serial.println(volStr.c_str());
             sonos_parameters.Volume = String(volStr.c_str()).toInt();
             return String(volStr.c_str()).toInt();
         }
@@ -406,7 +404,7 @@ int changeVolume(HTTPClient *http, IPAddress targetSonos, int amount) {
 
     if (http->begin(targetSonos.toString(), SONOS_PORT, "/MediaRenderer/RenderingControl/Control")) {
         auto call = changeVolumeCall(nextVolume);
-        Serial.printf("POST: BODY %s\n", call.c_str());
+        //Serial.printf("POST: BODY %s\n", call.c_str());
         http->addHeader("Content-Type", "text/xml; charset=\"utf-8\"");
         http->addHeader("SOAPACTION", "urn:schemas-upnp-org:service:RenderingControl:1#SetVolume");
 

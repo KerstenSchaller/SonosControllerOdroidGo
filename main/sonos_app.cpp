@@ -3,7 +3,7 @@
 #include "button_wrapper.h"
 #include "odroid_go.h"
 #include "sleep_controller.h"
-
+#include "time_controller.h"
 
 void updateSonosScreen();
 void handleButtonsSonos();
@@ -17,6 +17,7 @@ void startSonosApp()
 
 void handleSonosApp()
 {
+    handleSleep();
     handleButtonsSonos();
 }
 
@@ -41,7 +42,6 @@ void handleButtonsSonos()
       doSonos(sonosPlay);
       updateSonosScreen();
   }
-  handleSleep();
 }
 
 
@@ -57,6 +57,7 @@ void updateSonosScreen()
     GO.lcd.printf(" Volume: ");
     GO.lcd.print(sonos_parameters.Volume, DEC);
     GO.lcd.printf("\n");
+    GO.lcd.printf(" Time: %d:%d\n", time_info.tm_hour, time_info.tm_min);
     GO.lcd.printf("\n");
     GO.lcd.printf("\n");
     GO.lcd.printf("\n");

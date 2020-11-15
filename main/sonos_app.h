@@ -3,5 +3,6 @@
 
 void startSonosApp();
 void handleSonosApp();
+void updateSonosScreen();
 
 #endif
